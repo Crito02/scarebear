@@ -14,15 +14,15 @@ class face_and_eyes:
         self.now = 0
         self.then = time.time()
 
-    def face_detection(self, video = cv2.VideoCapture('/dev/video0', cv2.CAP_V4L)): #change form video device to just the from..  state machine should control timing
-        ret, frame = video.read() # remove this as just a frame ^^
+    def face_detection(self, frame): #change form video device to just the from..  state machine should control timing
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        self.frame = frame
+        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         faces = []
         faces = self.face_cascade.detectMultiScale(gray)
         detections = []
         for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.rectangle(self.frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             detections.append([x,y,w,h])
             self.box_ids = self.tracker.update(detections)
 
@@ -31,25 +31,22 @@ class face_and_eyes:
             centre_x = (int(test[0]+test[2]/2))
             
             centre_y = (int(test[1]+test[3]/2))
-            cv2.line(frame, (200,200), (centre_x,centre_y), (255,0,0), 4) 
+            cv2.line(self.frame, (200,200), (centre_x,centre_y), (255,0,0), 4) 
 
         j=0
         for box_id in self.box_ids:
             x, y, w, h, id, _ = box_id
-            cv2.putText(frame, str(id), (x, y - 15), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+            cv2.putText(self.frame, str(id), (x, y - 15), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
+            cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
         
             roi_gray = gray[y:y+h, x:x+w]
             eyes = self.eye_cascade.detectMultiScale(roi_gray)
-
-            i=0
             for (x2,y2,w2,h2) in eyes:
                 eye_center = (x + x2 + w2//2, y + y2 + h2//2)
                 radius = int(round((w2 + h2)*0.25))
-                cv2.circle(frame, eye_center, radius, (255, 0, 0 ), 1)
+                cv2.circle(self.frame, eye_center, radius, (255, 0, 0 ), 1)
                 self.box_ids[j][5] +=1 
                 if self.box_ids[j][5] >= 2:
-
                     break
             j+=1
 
@@ -63,25 +60,26 @@ class face_and_eyes:
                 target= [x, y, w, h, id]
                 break
         if target[4] !=0:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-        
-        #frames per second
+            cv2.rectangle(self.frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
+
+        #self.frames per second
         self.now = time.time()
         total = self.now - self.then
         self.then = self.now
-        cv2.putText(frame, str(int(1/total)), (20, 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
+        cv2.putText(self.frame, str(int(1/total)), (20, 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2)
         
-        # Display the resulting frame Should be in main loop..  
-        cv2.imshow('Video', frame)
-
+        return self.frame, self.box_ids
 
 
 if __name__ == "__main__":
     
     faces = face_and_eyes()
-    while True:
-        faces.face_detection()
+    video = cv2.VideoCapture('/dev/video0', cv2.CAP_V4L)
 
+    while True:
+        ret, frame = video.read() # remove this as just a frame ^^
+        frame_faces, _ = faces.face_detection(frame)
+        cv2.imshow('Video', frame_faces)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
