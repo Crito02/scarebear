@@ -1,6 +1,8 @@
 import cv2
 import sys
 import time
+
+from cv2 import resize
 from tracker import EuclideanDistTracker as Edt
 
 class face_and_eyes:
@@ -17,6 +19,14 @@ class face_and_eyes:
     def face_detection(self, frame): #change form video device to just the from..  state machine should control timing
 
         self.frame = frame
+        scale_percent = 100 # percent of original size
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+  
+        # resize image
+        frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+        print(frame.shape)
         gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         faces = []
         faces = self.face_cascade.detectMultiScale(gray)
