@@ -39,7 +39,6 @@ class body_and_faces:
             #this should be for the target only
             test = self.box_ids[len(self.box_ids)-1]
             centre_x = (int(test[0]+test[2]/2))
-            
             centre_y = (int(test[1]+test[3]/2))
             cv2.line(self.frame, (200,200), (centre_x,centre_y), (255,0,0), 4) 
 
