@@ -1,11 +1,11 @@
 import time
 
-class targeter():
+class BodyNoFaceThenLatest():
     def __init__(self):
         self.target_id = 0
         self.time_aquired = time.time()
 
-    def body_no_face_then_latest(self, box_ids):
+    def latest_target(self, box_ids):
         """
         targets a body id that has never had a face
 
@@ -40,8 +40,14 @@ class targeter():
             if time.time() > self.time_aquired + 2:
                 result = self.target_id
         return result
-        
-    def latest_face(self, box_ids):
+
+
+class LatestFace():
+    def __init__(self):
+        self.target_id = 0
+        self.time_aquired = time.time()
+
+    def latest_target(self, box_ids):
         """
         targets a body id that has never had a face
 
@@ -76,5 +82,3 @@ class targeter():
             if time.time() > self.time_aquired + 2:
                 result = self.target_id
         return result
-
-
